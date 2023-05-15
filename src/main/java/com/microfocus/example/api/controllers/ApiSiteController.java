@@ -42,7 +42,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -72,31 +71,30 @@ public class ApiSiteController {
 
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(ApiSiteController.class);
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    final AuthenticationManager authenticationManager;
+    final UserRepository userRepository;
+    final RoleRepository roleRepository;
 
-    @Autowired
-    AuthenticationManager authenticationManager;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    RoleRepository roleRepository;
+    public ApiSiteController(UserService userService, AuthenticationManager authenticationManager, JwtUtils jwtUtils, UserRepository userRepository, RoleRepository roleRepository) {
+        this.userService = userService;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtils = jwtUtils;
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+    }
 
     @Bean("ApiSiteControllerPasswordEncoder")
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    @Autowired
-    JwtUtils jwtUtils;
+    final JwtUtils jwtUtils;
 
-    public class SiteStatus {
+    public static class SiteStatus {
         private String health;
         private String motd;
 
-        SiteStatus() { }
         SiteStatus(String health, String motd) {
             this.health = health;
             this.motd = motd;
