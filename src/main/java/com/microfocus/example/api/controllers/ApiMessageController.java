@@ -35,6 +35,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -60,11 +61,8 @@ public class ApiMessageController {
 
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(ApiMessageController.class);
 
-    private final UserService userService;
-
-    public ApiMessageController(UserService userService) {
-        this.userService = userService;
-    }
+    @Autowired
+    private UserService userService;
 
     @Operation(summary = "Finds messages by keyword(s)", description = "Keyword search by %keyword% format", tags = {"message"}, security = @SecurityRequirement(name = "JWT Authentication"))
     @ApiResponses(value = {
@@ -81,12 +79,17 @@ public class ApiMessageController {
             @Parameter(description = "Maximum records to return. The maximum value allowed is 50.") @RequestParam("limit") Optional<Integer> limit) {
         log.debug("API::Retrieving messages by keyword(s)");
         // TODO: implement keywords, offset and limit
-
-        // implement future verification: if (keywords.equals(Optional.empty()))
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(
-            userService.getAllMessages().stream()
-                .map(MessageResponse::new)
-                .collect(Collectors.toList()));
+        if (keywords.equals(Optional.empty())) {
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(
+                userService.getAllMessages().stream()
+                    .map(MessageResponse::new)
+                    .collect(Collectors.toList()));
+        } else {
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(
+                userService.getAllMessages().stream()
+                    .map(MessageResponse::new)
+                    .collect(Collectors.toList()));
+        }
     }
 
     @Operation(summary = "Find message by Id", description = "Find a message by UUID", tags = {"message"}, security = @SecurityRequirement(name = "JWT Authentication"))

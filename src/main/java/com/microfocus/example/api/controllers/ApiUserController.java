@@ -34,6 +34,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -58,11 +59,8 @@ public class ApiUserController {
 
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(ApiUserController.class);
 
-    private final UserService userService;
-
-    public ApiUserController(UserService userService) {
-        this.userService = userService;
-    }
+    @Autowired
+    private UserService userService;
 
     @Operation(summary = "Find users by keyword(s)", description = "Keyword search by %keyword% format", tags = {"users"}, security = @SecurityRequirement(name = "JWT Authentication"))
     @ApiResponses(value = {

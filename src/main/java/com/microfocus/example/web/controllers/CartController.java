@@ -30,6 +30,7 @@ import com.microfocus.example.utils.WebUtils;
 import com.microfocus.example.web.form.OrderForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -53,17 +54,14 @@ public class CartController extends AbstractBaseController {
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final String CONTROLLER_NAME = getClass().getName();
 
-    private final ProductService productService;
+    @Autowired
+    private ProductService productService;
 
-    private final UserService userService;
+    @Autowired
+    private UserService userService;
 
-    final LocaleConfiguration localeConfiguration;
-
-    public CartController(ProductService productService, UserService userService, LocaleConfiguration localeConfiguration) {
-        this.productService = productService;
-        this.userService = userService;
-        this.localeConfiguration = localeConfiguration;
-    }
+    @Autowired
+    LocaleConfiguration localeConfiguration;
 
     @Override
     LocaleConfiguration GetLocaleConfiguration() {

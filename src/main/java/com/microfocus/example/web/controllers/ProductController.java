@@ -24,6 +24,7 @@ import com.microfocus.example.entity.Product;
 import com.microfocus.example.service.ProductService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -65,14 +66,11 @@ public class ProductController extends AbstractBaseController {
     @Value("${app.data.page-size:25}")
     private Integer defaultPageSize;
 
-    final ProductService productService;
+    @Autowired
+    ProductService productService;
 
-    final LocaleConfiguration localeConfiguration;
-
-    public ProductController(LocaleConfiguration localeConfiguration, ProductService productService) {
-        this.localeConfiguration = localeConfiguration;
-        this.productService = productService;
-    }
+    @Autowired
+    LocaleConfiguration localeConfiguration;
 
     @Autowired
     private ResourceLoader resourceLoader;

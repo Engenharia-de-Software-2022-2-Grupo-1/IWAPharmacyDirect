@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 public class SmsSenderService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
+    private final String SERVICE_NAME = getClass().getName();
 
     @Value("${app.twilio.phone-number}")
     private String twilioFrom;

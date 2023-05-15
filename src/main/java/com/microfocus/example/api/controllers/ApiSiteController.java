@@ -19,6 +19,7 @@
 
 package com.microfocus.example.api.controllers;
 
+import com.microfocus.example.config.handlers.GlobalRestExceptionHandler;
 import com.microfocus.example.entity.CustomUserDetails;
 import com.microfocus.example.entity.RefreshToken;
 import com.microfocus.example.entity.User;
@@ -55,6 +56,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.List;
