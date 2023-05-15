@@ -23,7 +23,8 @@ import com.microfocus.example.entity.CustomUserDetails;
 import com.microfocus.example.entity.User;
 import com.microfocus.example.exception.UserLockedOutException;
 import com.microfocus.example.repository.UserRepositoryCustom;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -31,6 +32,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Optional;
 
 /**
  * Implementation of basic User Details Service for spring security database authentication
@@ -39,7 +41,7 @@ import javax.transaction.Transactional;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-
+    private static final Logger log = LoggerFactory.getLogger(CustomUserDetailsService.class);
 
     @Autowired
     private UserRepositoryCustom userRepository;
@@ -47,16 +49,18 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Transactional
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = null;
+        Optional<User> user = Optional.ofNullable(null);
         try {
-            // Tenta encontrar o usuário pelo nome de usuário e, se não encontrado, tenta encontrar pelo e-mail
-            user = userRepository.findUserByUsername(username)
-                .orElseGet(() -> userRepository.findUserByEmail(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("User with email: " + username + " not found.")));
+            user = userRepository.findUserByUsername(username);
+            if (!user.isPresent()) {
+                user = userRepository.findUserByEmail(username);
+            }
+            if (!user.isPresent()) {
+                throw new UsernameNotFoundException("User with email: " + username + " not found.");
+            }
         } catch (UserLockedOutException ignored) {
-            // Tratamento de exceção para usuário bloqueado
+            // Do something here
         }
-        // Retorna os detalhes do usuário
-        return new CustomUserDetails(user);
+        return new CustomUserDetails(user.get());
     }
 }

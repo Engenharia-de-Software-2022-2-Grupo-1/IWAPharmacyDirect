@@ -20,23 +20,31 @@
 package com.microfocus.example.repository;
 
 import com.microfocus.example.entity.Message;
+import com.microfocus.example.entity.Product;
+import com.microfocus.example.entity.User;
+import com.microfocus.example.payload.request.MessageRequest;
 import com.microfocus.example.web.form.MessageForm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
  * Implementation of Custom Message Repository
- * 
  * @author Kevin A. Lee
  */
 @Transactional
 public class MessageRepositoryImpl implements MessageRepositoryCustom {
+
+    private static final Logger log = LoggerFactory.getLogger(MessageRepositoryImpl.class);
 
     private final MessageRepositoryBasic messageRepositoryBasic;
 
@@ -47,30 +55,34 @@ public class MessageRepositoryImpl implements MessageRepositoryCustom {
         this.messageRepositoryBasic = messageRepositoryBasic;
     }
 
+    @SuppressWarnings("unchecked")
     public List<Message> findByUserId(UUID userId) {
-        TypedQuery<Message> query = entityManager.createQuery(
+        Query query = entityManager.createQuery(
                 "SELECT m FROM Message m WHERE m.user.id = ?1",
                 Message.class);
         query.setParameter(1, userId);
         return query.getResultList();
     }
 
+    @SuppressWarnings("unchecked")
     public long countByUserId(UUID userId) {
         Query query = entityManager.createQuery(
                 "SELECT count(m) FROM Message m WHERE m.user.id = ?1",
                 Long.class);
         query.setParameter(1, userId);
-        return (long) (query.getSingleResult());
+        return (long)(query.getSingleResult());
     }
 
+    @SuppressWarnings("unchecked")
     public long countUnreadByUserId(UUID userId) {
         Query query = entityManager.createQuery(
                 "SELECT count(m) FROM Message m WHERE m.user.id = ?1 AND m.read = false",
                 Long.class);
         query.setParameter(1, userId);
-        return (long) (query.getSingleResult());
+        return (long)(query.getSingleResult());
     }
 
+    @SuppressWarnings("unchecked")
     public void markMessageAsReadById(UUID messageId) {
         Query query = entityManager.createQuery(
                 "UPDATE Message m SET m.read = true WHERE m.id = ?1");
@@ -79,7 +91,7 @@ public class MessageRepositoryImpl implements MessageRepositoryCustom {
     }
 
     public Message save(MessageForm message) {
-        Message m = new Message();
+        Message m =  new Message();
         m.setUser(message.getUser());
         m.setText(message.getText());
         return messageRepositoryBasic.save(m);
