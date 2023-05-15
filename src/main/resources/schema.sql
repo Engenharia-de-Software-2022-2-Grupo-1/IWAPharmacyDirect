@@ -5,7 +5,6 @@
 --alter table orders drop constraint FKorders_user_id if exists;
 --alter table reviews drop constraint FKproducts_product_id if exists;
 --alter table reviews drop constraint FKproducts_user_id if exists;
---alter table refresh_tokens constraint FK_refresh_tokens_user_id if exists;
 
 drop table authorities if exists cascade;
 drop table users if exists cascade;
@@ -14,7 +13,6 @@ drop table products if exists cascade;
 drop table messages if exists cascade;
 drop table orders if exists cascade;
 drop table reviews if exists cascade;
-drop table refresh_tokens if exists cascade;
 drop sequence if exists hibernate_sequence;
 create sequence hibernate_sequence start with 1 increment by 1;
 
@@ -100,13 +98,6 @@ create table reviews
     visible         bit             not null,
     primary key (id)
 );
-create table refresh_tokens
-(
-    id              UUID            not null,
-    user_id         UUID            not null,
-    expiry_date     datetime        null,
-    primary key (id)
-);
 
 alter table users
     add constraint UKuser_username unique (username);
@@ -122,5 +113,3 @@ alter table reviews
     add constraint FKproducts_product_id foreign key (product_id) references products (id) on delete cascade;
 alter table reviews
     add constraint FKproducts_user_id foreign key (user_id) references users (id) on delete cascade;
-alter table refresh_tokens
-    add constraint FK_refresh_tokens_user_id foreign key (user_id) references users (id) on delete cascade;

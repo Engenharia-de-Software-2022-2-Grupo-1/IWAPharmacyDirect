@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpHeaders;
@@ -72,9 +71,6 @@ public class ProductController extends AbstractBaseController {
     @Autowired
     LocaleConfiguration localeConfiguration;
 
-    @Autowired
-    private ResourceLoader resourceLoader;
-
     @Override
     LocaleConfiguration GetLocaleConfiguration() {
         return localeConfiguration;
@@ -84,16 +80,13 @@ public class ProductController extends AbstractBaseController {
     String GetControllerName() {
         return CONTROLLER_NAME;
     }
-
-    @Value("${spring.profiles.active:Unknown}")
-    private String activeProfile;
-
+    
     @GetMapping("/xss")
     @ResponseBody
     public ResponseEntity<String> getKeywordsContent(@Param("keywords") String keywords) {
 
     	String retContent = "Product search using: " + keywords;
-
+    	
         return ResponseEntity.ok().body(retContent);
     }
 
@@ -109,7 +102,7 @@ public class ProductController extends AbstractBaseController {
         this.setModelDefaults(model, principal, "index");
         return "products/firstaid";
     }
-
+    
     @GetMapping(value = {"", "/"})
     public String index(Model model, @Param("keywords") String keywords, @Param("limit") Integer limit, Principal principal) {
         log.debug("Searching for products using keywords: " + ((keywords == null || keywords.isEmpty()) ? "none" : keywords));
@@ -141,36 +134,23 @@ public class ProductController extends AbstractBaseController {
     @GetMapping("/{id}/download/{fileName:.+}")
     public ResponseEntity<Resource> downloadFile(@PathVariable(value = "id") UUID productId,
                                                  @PathVariable String fileName, HttpServletRequest request) {
-
         Resource resource;
         File dataDir;
+        try {
+            dataDir = ResourceUtils.getFile("classpath:data");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return ResponseEntity.notFound().build();
+        }
 
-        if (!activeProfile.contains("prod")) {
-            log.debug("Running dev/test profile: downloading from filesystem");
-            try {
-                dataDir = ResourceUtils.getFile("classpath:data");
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                return ResponseEntity.notFound().build();
-            }
-
-            log.debug("Using data directory: " + dataDir.getAbsolutePath());
-            String fileBasePath = dataDir.getAbsolutePath() + File.separatorChar + productId.toString() + File.separatorChar;
-            Path path = Paths.get(fileBasePath + fileName);
-            try {
-                resource = new UrlResource(path.toUri());
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-                return ResponseEntity.notFound().build();
-            }
-        } else {
-            log.info("Running production profile: downloading from JAR");
-            resource = resourceLoader
-                    .getResource("classpath:data" + File.separatorChar + productId.toString() + File.separatorChar + fileName);
-            if (!resource.exists()) {
-                log.error("Could not find resource classpath:data/{}", fileName);
-                return ResponseEntity.notFound().build();
-            }
+        log.debug("Using data directory: " + dataDir.getAbsolutePath());
+        String fileBasePath = dataDir.getAbsolutePath() + File.separatorChar + productId.toString() + File.separatorChar;
+        Path path = Paths.get(fileBasePath + fileName);
+        try {
+            resource = new UrlResource(path.toUri());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return ResponseEntity.notFound().build();
         }
 
         // Try to determine file's content type
@@ -178,10 +158,8 @@ public class ProductController extends AbstractBaseController {
         try {
             contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
         } catch (IOException ex) {
-            log.error("Could not determine Content Type.");
+            log.debug("Could not determine file type.");
         }
-        log.info("Resource filename: {}", resource.getFilename());
-        log.info("Content Type: {}", contentType.toString());
 
         // Fallback to the default content type if type could not be determined
         if (contentType == null) {
