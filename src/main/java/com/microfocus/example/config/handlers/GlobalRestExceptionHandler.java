@@ -20,7 +20,6 @@
 package com.microfocus.example.config.handlers;
 
 import com.microfocus.example.exception.*;
-import com.microfocus.example.exception.api.ApiBadCredentialsException;
 import com.microfocus.example.payload.response.ApiStatusResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -45,6 +45,7 @@ import org.springframework.web.multipart.support.MissingServletRequestPartExcept
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
@@ -53,17 +54,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@RestControllerAdvice
 //@Order(Ordered.HIGHEST_PRECEDENCE)
+@RestControllerAdvice
 public class GlobalRestExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalRestExceptionHandler.class);
 
     // Custom exception handlers
 
-    @ExceptionHandler(ApiBadCredentialsException.class)
-    public ResponseEntity<ApiStatusResponse> badCredentials(final ApiBadCredentialsException ex, final WebRequest request) {
-        log.debug("GlobalRestExceptionHandler::badCredentials");
+    @ExceptionHandler(ApiSiteBadCredentialsException.class)
+    public ResponseEntity<ApiStatusResponse> badCredentials(final ApiSiteBadCredentialsException ex, final WebRequest request) {
         ArrayList<String> errors = new ArrayList<>();
         errors.add(ex.getLocalizedMessage());
         final ApiStatusResponse apiStatusResponse = new ApiStatusResponse
